@@ -7,6 +7,8 @@ import (
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/config"
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/api/routes"
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/infrastructure/database"
+	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/infrastructure/jwt"
+	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/repository"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,11 +38,15 @@ func NewApplication(cfg *config.Config) *Application {
 		DB: database.DB,
 	}
 
+	tokenService := jwt.NewJWTService()
+	authRepo := repository.NewAuthRepository(database.DB)
+
 	modules := []Module{
 		NewUserModule(ctx),
+		NewAuthModule(ctx, tokenService),
 	}
 
-	routes.RegisterRoutes(r, getModulRoutes(modules)...)
+	routes.RegisterRoutes(r, tokenService, authRepo, getModuleRoutes(modules)...)
 
 	return &Application{
 		config:  cfg,
@@ -58,7 +64,7 @@ func (a *Application) Run() error {
 	return a.router.Run(a.config.ServerAddress)
 }
 
-func getModulRoutes(modules []Module) []routes.Route {
+func getModuleRoutes(modules []Module) []routes.Route {
 	routeList := make([]routes.Route, len(modules))
 	for i, module := range modules {
 		routeList[i] = module.Routes()

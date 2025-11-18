@@ -1,24 +1,19 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-DROP TABLE IF EXISTS files CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username TEXT NOT NULL,
-    password TEXT NOT NULL CHECK (length(password) >= 6),
-    email TEXT NOT NULL,
-    role TEXT NOT NULL,
-    enabletotp BOOLEAN DEFAULT FALSE,
-    CONSTRAINT users_username_key UNIQUE(username),
-    CONSTRAINT users_mail_key UNIQUE(email)
+    username VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    enableTOTP BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE files (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL,
-    name TEXT NOT NULL,
-    password TEXT,
+    name VARCHAR(255) NOT NULL,
+    password VARCHAR(255),
     type TEXT,
     size BIGINT,
     created_at TIMESTAMPTZ DEFAULT now(),
@@ -47,10 +42,14 @@ CREATE TABLE download (
     CONSTRAINT download_file_id_fkey FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS jwt_blacklist (
+    id SERIAL PRIMARY KEY,
+    token TEXT NOT NULL,
+    expired_at TIMESTAMP NOT NULL
+);
+
 INSERT INTO users (username, password, email, role)
 VALUES
     ('giang', '123456', 'giang@example.com', 'admin'),
     ('tuan', 'abcdef', 'tuan@example.com', 'user'),
     ('haixon', 'password', 'haixon@example.com', 'user');
-
-SELECT * FROM users;

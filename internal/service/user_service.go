@@ -15,17 +15,7 @@ func NewUserService(repo repository.UserRepository) UserService {
 	}
 }
 
-func (us *userService) CreateUser(username, password, email, role string) error {
-	user := &domain.User{
-		Username: username,
-		Password: password,
-		Email:    email,
-		Role:     role,
-	}
-	return us.userRepo.Create(user)
-}
-
-func (us *userService) GetUserById(id int) (*domain.User, error) {
+func (us *userService) GetUserById(id string) (*domain.User, error) {
 	user := &domain.User{}
 	err := us.userRepo.FindById(id, user)
 	if err != nil {
