@@ -47,3 +47,9 @@ CREATE TABLE IF NOT EXISTS jwt_blacklist (
     token TEXT NOT NULL,
     expired_at TIMESTAMP NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS user_totp (
+    user_id UUID PRIMARY KEY,
+    secret TEXT NOT NULL,
+    CONSTRAINT user_totp_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
