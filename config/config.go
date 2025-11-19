@@ -6,6 +6,14 @@ import (
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/pkg/utils"
 )
 
+type SystemPolicy struct {
+	MaxFileSizeMB            int
+	MinValidityHours         int
+	MaxValidityDays          int
+	DefaultValidityDays      int
+	RequirePasswordMinLength int
+}
+
 type DatabaseConfig struct {
 	Host     string
 	Port     string
@@ -18,6 +26,7 @@ type DatabaseConfig struct {
 type Config struct {
 	DB            DatabaseConfig
 	ServerAddress string
+	Policy        *SystemPolicy
 }
 
 func NewConfig() *Config {
@@ -30,6 +39,13 @@ func NewConfig() *Config {
 			Password: utils.GetEnv("DB_PASSWORD", "postgres"),
 			DBName:   utils.GetEnv("DB_NAME", "myapp"),
 			SSLMode:  utils.GetEnv("DB_SSLMODE", "disable"),
+		},
+		Policy: &SystemPolicy{
+			MaxFileSizeMB:            50,
+			MinValidityHours:         1,
+			MaxValidityDays:          30,
+			DefaultValidityDays:      7,
+			RequirePasswordMinLength: 6,
 		},
 	}
 }
