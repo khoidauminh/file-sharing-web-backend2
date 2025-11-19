@@ -9,10 +9,41 @@ CREATE TABLE IF NOT EXISTS users (
     enableTOTP BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE files (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    password VARCHAR(255),
+    type TEXT,
+    size BIGINT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    available_from TIMESTAMPTZ,
+    available_to TIMESTAMPTZ,
+    enable_totp BOOLEAN DEFAULT false,
+    share_token TEXT,
+    CONSTRAINT files_password_check CHECK (length(password) >= 6),
+    CONSTRAINT files_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE shared (
+    user_id UUID NOT NULL,
+    file_id UUID NOT NULL,
+    PRIMARY KEY (user_id, file_id),
+    CONSTRAINT shared_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT shared_file_id_fkey FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
+);
+
+CREATE TABLE download (
+    download_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    time TIMESTAMPTZ DEFAULT now(),
+    user_id UUID,
+    file_id UUID NOT NULL,
+    CONSTRAINT download_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT download_file_id_fkey FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS jwt_blacklist (
     id SERIAL PRIMARY KEY,
     token TEXT NOT NULL,
     expired_at TIMESTAMP NOT NULL
 );
-
