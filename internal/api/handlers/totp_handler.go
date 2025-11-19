@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/infrastructure/jwt"
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -17,14 +18,28 @@ func NewTotpHandler(totpService service.TotpService) *TotpHandler {
 	}
 }
 
-func (h *TotpHandler) SetupTOTP(c *gin.Context) {
-	userID, exists := c.Get("userID")
+func getUserIDFromContext(c *gin.Context) (string, bool) {
+	userObj, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found"})
+		return "", false
+	}
+	
+	claims, ok := userObj.(*jwt.Claims)
+	if !ok {
+		return "", false
+	}
+	
+	return claims.UserID, true
+}
+
+func (h *TotpHandler) SetupTOTP(c *gin.Context) {
+	userID, ok := getUserIDFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized or invalid token"})
 		return
 	}
 
-	resp, err := h.TotpService.SetupTOTP(userID.(int))
+	resp, err := h.TotpService.SetupTOTP(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -41,9 +56,9 @@ type VerifyTOTPRequest struct {
 }
 
 func (h *TotpHandler) VerifyTOTP(c *gin.Context) {
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found"})
+	userID, ok := getUserIDFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized or invalid token"})
 		return
 	}
 
@@ -53,13 +68,13 @@ func (h *TotpHandler) VerifyTOTP(c *gin.Context) {
 		return
 	}
 
-	ok, err := h.TotpService.VerifyTOTP(userID.(int), req.Code)
+	okVerify, err := h.TotpService.VerifyTOTP(userID, req.Code)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if !ok {
+	if !okVerify {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid TOTP code"})
 		return
 	}
