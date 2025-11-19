@@ -47,9 +47,3 @@ CREATE TABLE IF NOT EXISTS jwt_blacklist (
     token TEXT NOT NULL,
     expired_at TIMESTAMP NOT NULL
 );
-
-INSERT INTO users (username, password, email, role)
-VALUES
-    ('giang', '123456', 'giang@example.com', 'admin'),
-    ('tuan', 'abcdef', 'tuan@example.com', 'user'),
-    ('haixon', 'password', 'haixon@example.com', 'user');
