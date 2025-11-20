@@ -129,13 +129,21 @@ docker exec -it postgres-db psql -U postgres
 # Đã vào shell của postgres
 
 CREATE USER haixon WITH PASSWORD "123456";
+
 CREATE DATABASE "file-sharing";
-exit
+
+\c "file-sharing";
+
+GRANT ALL PRIVILEGES ON DATABASE "file-sharing" TO haixon;
+
+exit;
 ```
 
-Vào `cmd/server` của repo và chạy:
+Init và chạy server:
 ```
-go run main.go
+make            # Chạy các lênh SQL trong init.sql để tạo bảng (chỉ dùng 1 lần cho 1 docker)
+
+make server     # Chạy server
 ```
 
 Ở đây có thể dùng Postman hoặc curl để kiểm thử các API.
