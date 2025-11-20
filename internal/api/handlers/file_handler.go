@@ -151,3 +151,20 @@ func (fh *FileHandler) GetFileInfo(ctx *gin.Context) {
 
 	utils.ResponseSuccess(ctx, http.StatusOK, "File retrieved successfully", result)
 }
+
+func (fh *FileHandler) DownloadFile(ctx *gin.Context) {
+	fileToken := ctx.Param("shareToken")
+	password := ctx.Query("password")
+	userID, exists := ctx.Get("userID")
+	if !exists {
+		userID = nil
+	}
+
+	result, err := fh.file_service.DownloadFile(ctx, fileToken, userID.(string), password)
+	if err != nil {
+		utils.ResponseError(ctx, utils.WrapError(err, "Failed to download file", utils.ErrCodeInternal))
+		return
+	}
+
+	ctx.Data(http.StatusOK, "application/octet-stream", result)
+}

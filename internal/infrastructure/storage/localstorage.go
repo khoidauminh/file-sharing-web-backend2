@@ -43,6 +43,19 @@ func (s *LocalStorage) SaveFile(file *multipart.FileHeader, filename string) (st
 	return dst, nil
 }
 
+func (s *LocalStorage) GetFile(filename string) (io.Reader, error) {
+	dst := filepath.Join(s.UploadDir, filename)
+
+	file, err := os.Open(dst)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file: %w", err)
+	}
+
+	var reader io.Reader = file
+
+	return reader, nil
+}
+
 func (s *LocalStorage) DeleteFile(filename string) error {
 	path := filepath.Join(s.UploadDir, filename) // Dòng này quan trọng
 	if err := os.Remove(path); err != nil {
