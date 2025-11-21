@@ -17,9 +17,9 @@ func NewAuthRepository(db *sql.DB) AuthRepository {
 }
 
 func (ur *authRepository) Create(user *domain.User) (*domain.User, error) {
-	row := ur.db.QueryRow("INSERT INTO users (username, password, Email, Role, enableTOTP) VALUES ($1, $2, $3, $4, $5) RETURNING id", user.Username, user.Password, user.Email, user.Role, user.EnableTOTP)
+	row := ur.db.QueryRow("INSERT INTO users (id, username, password, email, role, enableTOTP, secretTOTP) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", user.Id, user.Username, user.Password, user.Email, user.Role, user.EnableTOTP, user.SecretTOTP)
 	err := row.Scan(&user.Id)
-
+	fmt.Println("Created user with ID:", user.Id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
@@ -43,4 +43,31 @@ func (r *authRepository) IsTokenBlacklisted(token string) (bool, error) {
 	).Scan(&exists)
 
 	return exists, err
+}
+
+func (r *authRepository) SaveSecret(userID string, secret string) error {
+	_, err := r.db.Exec(`
+		UPDATE users 
+		SET secrettotp = $1 
+		WHERE id = $2
+	`, secret, userID)
+	return err
+}
+
+func (r *authRepository) GetSecret(userID string) (string, error) {
+	var secret string
+	err := r.db.QueryRow(`
+		SELECT secrettotp 
+		FROM users 
+		WHERE id = $1
+	`, userID).Scan(&secret)
+	if err != nil {
+		return "", err
+	}
+	return secret, nil
+}
+
+func (r *authRepository) EnableTOTP(userID string) error {
+	_, err := r.db.Exec(`UPDATE users SET "enabletotp" = TRUE WHERE id = $1`, userID)
+	return err
 }
