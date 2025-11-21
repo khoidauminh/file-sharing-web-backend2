@@ -8,7 +8,6 @@ import (
 	"mime/multipart"
 	"slices"
 
-	"path/filepath"
 	"time"
 
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/config"
@@ -203,12 +202,11 @@ func (s *fileService) DeleteFile(ctx context.Context, fileID string, userID stri
 	}
 
 	// Xóa vật lý trước
-	file.StorageName = fileID + filepath.Ext(file.FileName) // Đảm bảo đúng tên file vật lý
+	file.StorageName = fileID // Đảm bảo đúng tên file vật lý
 	if err := s.storage.DeleteFile(file.StorageName); err != nil {
 		return utils.WrapError(err, "Failed to delete file from storage", utils.ErrCodeInternal)
 	}
 
-	// Xóa metadata
 	if err := s.fileRepo.DeleteFile(ctx, fileID, userID); err != nil {
 		return utils.WrapError(err, "Failed to delete file metadata", utils.ErrCodeInternal)
 	}
