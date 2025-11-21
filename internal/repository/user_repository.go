@@ -18,7 +18,7 @@ func NewSQLUserRepository(DB *sql.DB) UserRepository {
 
 func (ur *SQLUserRepository) FindById(id string, user *domain.User) error {
 	row := ur.db.QueryRow("SELECT * FROM users WHERE id = $1", id)
-	err := row.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Role, &user.EnableTOTP)
+	err := row.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Role, &user.EnableTOTP, &user.SecretTOTP)
 
 	if err != nil {
 		return err
@@ -29,10 +29,21 @@ func (ur *SQLUserRepository) FindById(id string, user *domain.User) error {
 
 func (ur *SQLUserRepository) FindByEmail(email string, user *domain.User) error {
 	row := ur.db.QueryRow("SELECT * FROM users WHERE email = $1", email)
-	err := row.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Role, &user.EnableTOTP)
+	err := row.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Role, &user.EnableTOTP, &user.SecretTOTP)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (ur *SQLUserRepository) AddTimestamp(id string, cid string) error {
+	_, err := ur.db.Exec(`
+		INSERT INTO usersLoginSession (id, cid)
+		VALUES ($1, $2)
+		ON CONFLICT (id) DO UPDATE 
+		SET cid = EXCLUDED.cid
+	`, id, cid)
+
+	return err
 }
