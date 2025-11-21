@@ -27,6 +27,8 @@ func RegisterRoutes(r *gin.Engine, authService jwt.TokenService, authRepo reposi
 		switch route.(type) {
 		case *AuthRoutes:
 			route.Register(api)
+		case *FileRoutes:
+			route.Register(api)
 		default:
 			route.Register(protected)
 		}

@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS files (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL,
+    user_id UUID, -- Cho phép file anonymous upload.
     name VARCHAR(255) NOT NULL,
     password VARCHAR(255),
     type TEXT,

@@ -50,10 +50,7 @@ func (fh *FileHandler) UploadFile(ctx *gin.Context) {
 		userID = &strVal
 	} else {
 		// Nếu không tìm thấy userID, đây là ANONYMOUS UPLOAD.
-		// Set userID = nil và TIẾP TỤC xử lý.
-		utils.ResponseError(ctx, utils.NewError("Authentication required for upload", utils.ErrCodeUnauthorized))
-		return // Dừng request
-
+		userID = nil
 	}
 
 	// 5. Xử lý upload

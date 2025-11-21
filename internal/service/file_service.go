@@ -128,7 +128,7 @@ func (s *fileService) UploadFile(ctx context.Context, fileHeader *multipart.File
 		FileSize:      fileHeader.Size,
 		MimeType:      fileHeader.Header.Get("Content-Type"),
 		ShareToken:    shareToken,
-		IsPublic:      req.IsPublic,
+		IsPublic:      req.IsPublic || ownerID == nil, // buộc file là public khi không xác định được owner.
 		HasPassword:   passwordHash != nil,
 		PasswordHash:  passwordHash,
 		EnableTOTP:    req.EnableTOTP,
