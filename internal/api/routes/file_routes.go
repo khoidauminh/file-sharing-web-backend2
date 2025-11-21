@@ -32,6 +32,6 @@ func (fr *FileRoutes) Register(r *gin.RouterGroup) {
 
 		// Các routes download công khai và xem thông tin (chưa triển khai đầy đủ)
 		files.GET("/:shareToken", fr.handler.GetFileInfo)
-		// r.GET("/f/:shareToken/download", fr.handler.DownloadFile)
+		files.GET("/:shareToken/download", fr.handler.DownloadFile)
 	}
 }
