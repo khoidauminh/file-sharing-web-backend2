@@ -22,14 +22,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type FileService interface {
-	UploadFile(ctx context.Context, fileHeader *multipart.FileHeader, req *dto.UploadRequest, ownerID *string) (*domain.File, error)
-	GetMyFiles(ctx context.Context, userID string, params domain.ListFileParams) (interface{}, error)
-	DeleteFile(ctx context.Context, fileID string, userID string) error
-	GetFileInfo(ctx context.Context, token string, userID string) (interface{}, error) // Cần cho download
-	DownloadFile(ctx context.Context, token string, userID string, password string) (*domain.File, []byte, error)
-}
-
 type fileService struct {
 	cfg        *config.Config
 	fileRepo   repository.FileRepository
