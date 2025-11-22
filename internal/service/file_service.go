@@ -156,10 +156,8 @@ func (s *fileService) UploadFile(ctx context.Context, fileHeader *multipart.File
 	if req.SharedWith != nil && *req.SharedWith != "" {
 		var emails []string
 		if err := json.Unmarshal([]byte(*req.SharedWith), &emails); err == nil {
-			// Logic tìm User ID từ Email (cần UserRepository)
-			userIDs := []string{"user-uuid-1", "user-uuid-2"} // Mô phỏng
-			if len(userIDs) > 0 {
-				s.sharedRepo.ShareFileWithUsers(ctx, savedFile.Id, userIDs) // Mô phỏng
+			if err := s.sharedRepo.ShareFileWithUsers(ctx, savedFile.Id, emails); err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -230,7 +228,7 @@ func (s *fileService) getFileInfo(ctx context.Context, token string, userID stri
 			return file, nil
 		}
 
-		return nil, fmt.Errorf("permission denited to read file")
+		return nil, fmt.Errorf("permission denied to read file")
 	}
 
 	return file, nil

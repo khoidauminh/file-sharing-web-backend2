@@ -34,10 +34,10 @@ func NewConfig() *Config {
 		ServerAddress: fmt.Sprintf(":%s", utils.GetEnv("SERVER_PORT", "8080")),
 		DB: DatabaseConfig{
 			Host:     utils.GetEnv("DB_HOST", "localhost"),
-			Port:     utils.GetEnv("DB_PORT", "5432"),
+			Port:     utils.GetEnv("DB_PORT", "5435"),
 			User:     utils.GetEnv("DB_USER", "postgres"),
 			Password: utils.GetEnv("DB_PASSWORD", "postgres"),
-			DBName:   utils.GetEnv("DB_NAME", "myapp"),
+			DBName:   utils.GetEnv("DB_NAME", "file-sharing"),
 			SSLMode:  utils.GetEnv("DB_SSLMODE", "disable"),
 		},
 		Policy: &SystemPolicy{

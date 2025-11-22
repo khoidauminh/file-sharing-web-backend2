@@ -18,12 +18,14 @@ func NewFileRoutes(handler *handlers.FileHandler) *FileRoutes {
 
 func (fr *FileRoutes) Register(r *gin.RouterGroup) {
 	files := r.Group("/files")
+	optional := files.Group("/")
+	optional.Use(middleware.AuthMiddlewareUpload())
 	{
 		// POST /api/files/upload
 		// Lưu ý: Endpoint này không cần AuthMiddleware() nếu là Anonymous Upload.
 		// Cần middleware kiểm tra JWT VÀ cho phép request tiếp tục nếu không có token.
 		// Hiện tại nó đang được đăng ký dưới protected group, nhưng logic xử lý trong handler đã cho phép anonymous.
-		files.POST("/upload", fr.handler.UploadFile)
+		optional.POST("/upload", fr.handler.UploadFile)
 	}
 	protected := files.Group("/")
 	protected.Use(middleware.AuthMiddleware())

@@ -12,7 +12,7 @@ import (
 )
 
 type SharedRepository interface {
-	ShareFileWithUsers(ctx context.Context, fileID string, userIDs []string) error
+	ShareFileWithUsers(ctx context.Context, fileID string, emails []string) error
 	GetUsersSharedWith(ctx context.Context, fileID string) (*domain.Shared, error)
 }
 
@@ -24,33 +24,48 @@ func NewSharedRepository(db *sql.DB) SharedRepository {
 	return &sharedRepository{db: db}
 }
 
-func (r *sharedRepository) ShareFileWithUsers(ctx context.Context, fileID string, userIDs []string) error {
-	if len(userIDs) == 0 {
+func (r *sharedRepository) ShareFileWithUsers(ctx context.Context, fileID string, emails []string) error {
+	if len(emails) == 0 {
 		return nil
 	}
 
-	// 1. Chuẩn bị query
-	var valuePlaceholders []string
-	var args []interface{}
+	var emailstrings []string
+	for _, e := range emails {
+		emailstrings = append(emailstrings, fmt.Sprintf("'%s'", e))
+	}
 
-	i := 1
-	for _, userID := range userIDs {
-		// (user_id, file_id)
-		valuePlaceholders = append(valuePlaceholders, fmt.Sprintf("($%d, $%d)", i, i+1))
-		args = append(args, userID, fileID)
-		i += 2
+	userIDQuery := fmt.Sprintf(`SELECT id FROM users WHERE email IN (%s);`, strings.Join(emailstrings, ", "))
+
+	userIDsRaw, err := r.db.QueryContext(ctx, userIDQuery)
+	if err != nil {
+		log.Println("Email retrieval failure")
+		return err
+	}
+
+	var queryValues []string
+	for userIDsRaw.Next() {
+		var userid_tmp string
+		if err := userIDsRaw.Scan(&userid_tmp); err != nil {
+			log.Println("Email scan failure")
+			return err
+		}
+
+		queryValues = append(queryValues, fmt.Sprintf("('%s', '%s')", userid_tmp, fileID))
+	}
+
+	if len(queryValues) == 0 {
+		return nil
 	}
 
 	query := fmt.Sprintf(`
 		INSERT INTO shared (user_id, file_id) 
 		VALUES %s 
 		ON CONFLICT (user_id, file_id) DO NOTHING
-	`, strings.Join(valuePlaceholders, ", "))
+	`, strings.Join(queryValues, ", "))
 
-	// 2. Thực thi query
-	_, err := r.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("failed to execute share file query: %w", err)
+	if _, err := r.db.ExecContext(ctx, query); err != nil {
+		log.Println("INSERT failure")
+		return err
 	}
 
 	return nil

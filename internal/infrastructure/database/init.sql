@@ -79,7 +79,7 @@ AS $$
     UPDATE filestat
     SET
         user_download_count = user_download_count + 1
-    WHERE file_id = f_id AND NOT EXISTS (SELECT 1 FROM download WHERE user_id = u_id);
+    WHERE file_id = f_id AND NOT EXISTS (SELECT 1 FROM download WHERE user_id = u_id AND file_id = f_id);
 
     INSERT INTO download (file_id, user_id) VALUES (f_id, u_id);
 $$;
