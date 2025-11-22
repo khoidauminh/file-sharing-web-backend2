@@ -15,6 +15,7 @@ import (
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/domain"
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/infrastructure/storage"
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/repository"
+
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -25,8 +26,10 @@ type FileService interface {
 	UploadFile(ctx context.Context, fileHeader *multipart.FileHeader, req *dto.UploadRequest, ownerID *string) (*domain.File, error)
 	GetMyFiles(ctx context.Context, userID string, params domain.ListFileParams) (interface{}, error)
 	DeleteFile(ctx context.Context, fileID string, userID string) error
-	GetFileInfo(ctx context.Context, token string, userID string) (interface{}, error) // Cần cho download
+	GetFileInfo(ctx context.Context, token string, userID string) (*domain.File, error)
+	GetFileInfoID(ctx context.Context, token string, userID string) (*domain.File, error)
 	DownloadFile(ctx context.Context, token string, userID string, password string) (*domain.File, []byte, error)
+	GetFileDownloadHistory(ctx context.Context, fileID string, userID string, pagenum, limit int) (*domain.FileDownloadHistory, error)
 }
 
 type fileService struct {
@@ -234,16 +237,46 @@ func (s *fileService) getFileInfo(ctx context.Context, token string, userID stri
 	return file, nil
 }
 
-func (s *fileService) GetFileInfo(ctx context.Context, token string, userID string) (interface{}, error) {
+func (s *fileService) getFileInfoID(ctx context.Context, id string, userID string) (*domain.File, error) {
+	file, err := s.fileRepo.GetFileByID(ctx, id)
+	if err != nil {
+		return nil, utils.WrapError(err, "Failed to get file info", utils.ErrCodeInternal)
+	}
+
+	shareds, err := s.sharedRepo.GetUsersSharedWith(ctx, file.Id)
+	if err != nil {
+		return nil, utils.WrapError(err, "Failed to get shared list", utils.ErrCodeInternal)
+	}
+
+	if !file.IsPublic {
+		if slices.Contains(shareds.UserIds, userID) || *file.OwnerId == userID {
+			return file, nil
+		}
+
+		return nil, fmt.Errorf("permission denied to read file")
+	}
+
+	return file, nil
+}
+
+func (s *fileService) GetFileInfo(ctx context.Context, token string, userID string) (*domain.File, error) {
 	file, err := s.getFileInfo(ctx, token, userID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return gin.H{
-		"file": file,
-	}, nil
+	return file, nil
+}
+
+func (s *fileService) GetFileInfoID(ctx context.Context, id string, userID string) (*domain.File, error) {
+	file, err := s.getFileInfoID(ctx, id, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }
 
 func (s *fileService) DownloadFile(ctx context.Context, token string, userID string, password string) (*domain.File, []byte, error) {
@@ -278,4 +311,47 @@ func (s *fileService) DownloadFile(ctx context.Context, token string, userID str
 	}
 
 	return fileInfo, file, nil
+}
+
+func (s *fileService) GetFileDownloadHistory(ctx context.Context, fileID string, userID string, pagenum, limit int) (*domain.FileDownloadHistory, error) {
+	history, err := s.fileRepo.GetFileDownloadHistory(ctx, fileID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	history.Pagination = domain.Pagination{
+		CurrentPage:  pagenum,
+		TotalPages:   (len(history.History) + limit) / limit,
+		TotalRecords: len(history.History),
+		Limit:        limit,
+	}
+
+	start := (len(history.History) / limit) * pagenum
+	end := min(start+limit, len(history.History))
+	history.History = history.History[start:end]
+
+	for i := range history.History {
+		u := &history.History[i]
+
+		if u.UserId == nil {
+			continue
+		}
+
+		if *u.UserId == "" {
+			continue
+		}
+
+		user := domain.User{}
+		err := s.userRepo.FindById(*u.UserId, &user)
+		if err != nil {
+			return nil, err
+		}
+
+		u.Downloader = &domain.Downloader{
+			Username: user.Username,
+			Email:    user.Email,
+		}
+	}
+
+	return history, nil
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/pkg/utils"
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/pkg/validation"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type FileHandler struct {
@@ -26,41 +27,33 @@ func NewFileHandler(file_service service.FileService) *FileHandler {
 func (fh *FileHandler) UploadFile(ctx *gin.Context) {
 	var req dto.UploadRequest
 
-	// 1. Lấy file từ request form
 	fileHeader, err := ctx.FormFile("file")
 	if err != nil {
-		// Trả về lỗi nếu không tìm thấy file
 		utils.ResponseError(ctx, utils.NewError("File is required for upload", utils.ErrCodeBadRequest))
 		return
 	}
 
-	// 2. Set FileNameForValidation để Validation có thể kiểm tra extension
 	req.FileNameForValidation = fileHeader.Filename
 
-	// 3. Bind các trường dữ liệu khác
 	if err := ctx.ShouldBind(&req); err != nil {
 		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
 		return
 	}
 
-	// 4. Lấy UserID từ context (Cho phép Anonymous Upload)
 	var userID *string
 	if val, exists := ctx.Get("userID"); exists && val != "" {
 		strVal := val.(string)
 		userID = &strVal
 	} else {
-		// Nếu không tìm thấy userID, đây là ANONYMOUS UPLOAD.
 		userID = nil
 	}
 
-	// 5. Xử lý upload
 	uploadedFile, err := fh.file_service.UploadFile(ctx, fileHeader, &req, userID)
 	if err != nil {
 		utils.ResponseError(ctx, err)
 		return
 	}
 
-	// 6. Chuẩn bị Response DTO
 	response := gin.H{
 		"id":            uploadedFile.Id,
 		"fileName":      uploadedFile.FileName,
@@ -76,14 +69,12 @@ func (fh *FileHandler) UploadFile(ctx *gin.Context) {
 		"createdAt":     uploadedFile.CreatedAt,
 	}
 
-	// Trả về 201 Created
 	utils.ResponseSuccess(ctx, http.StatusCreated, "File uploaded successfully", gin.H{"file": response})
 }
 
 func (fh *FileHandler) DeleteFile(ctx *gin.Context) {
 	fileID := ctx.Param("id")
 
-	// Lấy UserID (bắt buộc phải login để xóa file)
 	userID, exists := ctx.Get("userID")
 	if !exists {
 		utils.ResponseError(ctx, utils.NewError("Unauthorized access", utils.ErrCodeUnauthorized))
@@ -107,14 +98,12 @@ func (fh *FileHandler) GetMyFiles(ctx *gin.Context) {
 		return
 	}
 
-	// Lấy tham số query
 	status := ctx.DefaultQuery("status", "all")
 	page := utils.GetIntQuery(ctx, "page", 1)
 	limit := utils.GetIntQuery(ctx, "limit", 20)
 	sortBy := ctx.DefaultQuery("sortBy", "createdAt")
 	order := ctx.DefaultQuery("order", "desc")
 
-	// Ánh xạ tham số vào domain.ListFileParams
 	params := domain.ListFileParams{
 		Status: strings.ToLower(status),
 		Page:   page,
@@ -130,27 +119,35 @@ func (fh *FileHandler) GetMyFiles(ctx *gin.Context) {
 		return
 	}
 
-	utils.ResponseSuccess(ctx, http.StatusOK, "User files retrieved successfully", result)
+	utils.ResponseSuccess(ctx, http.StatusOK, "User files retrieved successfully", gin.H{"file": result})
 }
 
 func (fh *FileHandler) GetFileInfo(ctx *gin.Context) {
-	fileToken := ctx.Param("shareToken")
+	ident := ctx.Param("ident")
 	userID, exists := ctx.Get("userID")
 	if !exists {
 		userID = nil
 	}
 
-	result, err := fh.file_service.GetFileInfo(ctx, fileToken, userID.(string))
+	var result *domain.File = nil
+	var err error = nil
+
+	if uuid.Validate(ident) == nil {
+		result, err = fh.file_service.GetFileInfoID(ctx, ident, userID.(string))
+	} else {
+		result, err = fh.file_service.GetFileInfo(ctx, ident, userID.(string))
+	}
+
 	if err != nil {
 		utils.ResponseError(ctx, utils.WrapError(err, "Failed to access file", utils.ErrCodeInternal))
 		return
 	}
 
-	utils.ResponseSuccess(ctx, http.StatusOK, "File retrieved successfully", result)
+	utils.ResponseSuccess(ctx, http.StatusOK, "File retrieved successfully", gin.H{"file": result})
 }
 
 func (fh *FileHandler) DownloadFile(ctx *gin.Context) {
-	fileToken := ctx.Param("shareToken")
+	fileToken := ctx.Param("ident")
 	password := ctx.Query("password")
 	userID, exists := ctx.Get("userID")
 	if !exists {
@@ -164,4 +161,27 @@ func (fh *FileHandler) DownloadFile(ctx *gin.Context) {
 	}
 
 	ctx.Data(http.StatusOK, info.MimeType, file)
+}
+
+func (fh *FileHandler) GetFileDownloadHistory(ctx *gin.Context) {
+	fileID := ctx.Param("ident")
+	userID, exists := ctx.Get("userID")
+	if !exists {
+		userID = nil
+	}
+
+	page := utils.GetIntQuery(ctx, "page", 1)
+	limit := utils.GetIntQuery(ctx, "limit", 20)
+	if limit == 0 {
+		utils.ResponseError(ctx, utils.NewError("Limit must not be 0", utils.ErrCodeBadRequest))
+		return
+	}
+
+	history, err := fh.file_service.GetFileDownloadHistory(ctx, fileID, userID.(string), page, limit)
+	if err != nil {
+		utils.ResponseError(ctx, utils.WrapError(err, "Failed to get file history", utils.ErrCodeInternal))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, history)
 }

@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/domain"
 )
@@ -18,6 +20,7 @@ type FileRepository interface {
 	GetMyFiles(ctx context.Context, userID string, params domain.ListFileParams) ([]domain.File, error)
 	FindAll(ctx context.Context) ([]domain.File, error)
 	RegisterDownload(ctx context.Context, fileID string, userID string) error
+	GetFileDownloadHistory(ctx context.Context, fileID string, userID string) (*domain.FileDownloadHistory, error)
 }
 
 type fileRepository struct {
@@ -349,4 +352,49 @@ func (r *fileRepository) FindAll(ctx context.Context) ([]domain.File, error) {
 func (r *fileRepository) RegisterDownload(ctx context.Context, fileID string, userID string) error {
 	_, err := r.db.ExecContext(ctx, `CALL proc_download($1, $2)`, fileID, userID)
 	return err
+}
+
+func (r *fileRepository) GetFileDownloadHistory(ctx context.Context, fileID string, userID string) (*domain.FileDownloadHistory, error) {
+	file, err := r.GetFileByID(ctx, fileID)
+	if err != nil {
+		log.Println("File retrieval failure")
+		return nil, err
+	}
+
+	if *file.OwnerId != userID {
+		log.Println("Not the owner")
+		return nil, fmt.Errorf("permission denied to view file")
+	}
+
+	history := domain.FileDownloadHistory{}
+
+	history.FileId = file.Id
+	history.FileName = file.FileName
+
+	rows, err := r.db.QueryContext(ctx, `SELECT download_id, user_id, time FROM download WHERE file_id = $1`, file.Id)
+	if err != nil {
+		log.Println("Download retrieval failure")
+		return nil, err
+	}
+
+	for rows.Next() {
+		var time time.Time
+		var d_id string
+		var u_id string
+		if err := rows.Scan(&d_id, &u_id, &time); err != nil {
+			log.Println("Row scan failure")
+			return nil, err
+		}
+
+		history.History = append(history.History,
+			domain.Download{
+				DownloadId:        d_id,
+				UserId:            &u_id,
+				Downloader:        nil,
+				DownloadedAt:      time,
+				DownloadCompleted: true,
+			})
+	}
+
+	return &history, nil
 }
