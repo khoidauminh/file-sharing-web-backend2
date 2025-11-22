@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/api/dto"
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/service"
@@ -29,7 +30,8 @@ func (ah *AdminHandler) GetSystemPolicy(ctx *gin.Context) {
 	}
 
 	// Trả về cấu hình hệ thống
-	utils.ResponseSuccess(ctx, http.StatusOK, "System policy retrieved successfully", policy)
+	//utils.ResponseSuccess(ctx, http.StatusOK, "System policy retrieved successfully", policy)
+	ctx.JSON(http.StatusOK, policy)
 }
 
 func (ah *AdminHandler) UpdateSystemPolicy(ctx *gin.Context) {
@@ -47,7 +49,11 @@ func (ah *AdminHandler) UpdateSystemPolicy(ctx *gin.Context) {
 	}
 
 	// Cập nhật thành công
-	utils.ResponseSuccess(ctx, http.StatusOK, "System policy updated successfully", gin.H{"policy": updatedPolicy})
+	//utils.ResponseSuccess(ctx, http.StatusOK, "System policy updated successfully", gin.H{"policy": updatedPolicy})
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "System policy updated successfully",
+		"policy":  updatedPolicy,
+	})
 }
 
 func (ah *AdminHandler) CleanupExpiredFiles(ctx *gin.Context) {
@@ -60,7 +66,12 @@ func (ah *AdminHandler) CleanupExpiredFiles(ctx *gin.Context) {
 		return
 	}
 
-	utils.ResponseSuccess(ctx, http.StatusOK, "Cleanup completed", gin.H{
+	//utils.ResponseSuccess(ctx, http.StatusOK, "Cleanup completed", gin.H{
+	//	"deletedFiles": deletedCount,
+	//})
+	ctx.JSON(http.StatusOK, gin.H{
+		"message":      "Cleanup completed",
 		"deletedFiles": deletedCount,
+		"timestamp":    time.Now().UTC().Format(time.RFC3339),
 	})
 }

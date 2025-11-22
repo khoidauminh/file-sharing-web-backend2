@@ -69,7 +69,12 @@ func (fh *FileHandler) UploadFile(ctx *gin.Context) {
 		"createdAt":     uploadedFile.CreatedAt,
 	}
 
-	utils.ResponseSuccess(ctx, http.StatusCreated, "File uploaded successfully", gin.H{"file": response})
+	//utils.ResponseSuccess(ctx, http.StatusCreated, "File uploaded successfully", gin.H{"file": response})
+	ctx.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"file":    response,
+		"message": "File uploaded successfully",
+	})
 }
 
 func (fh *FileHandler) DeleteFile(ctx *gin.Context) {
@@ -88,7 +93,11 @@ func (fh *FileHandler) DeleteFile(ctx *gin.Context) {
 		return
 	}
 
-	utils.ResponseSuccess(ctx, http.StatusOK, "File deleted successfully", gin.H{"fileId": fileID})
+	//utils.ResponseSuccess(ctx, http.StatusOK, "File deleted successfully", gin.H{"fileId": fileID})
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "File deleted successfully",
+		"fileId":  fileID,
+	})
 }
 
 func (fh *FileHandler) GetMyFiles(ctx *gin.Context) {
@@ -119,7 +128,10 @@ func (fh *FileHandler) GetMyFiles(ctx *gin.Context) {
 		return
 	}
 
-	utils.ResponseSuccess(ctx, http.StatusOK, "User files retrieved successfully", gin.H{"file": result})
+	//utils.ResponseSuccess(ctx, http.StatusOK, "User files retrieved successfully", gin.H{"file": result})
+	ctx.JSON(http.StatusOK, gin.H{
+		"file" : result,
+	})
 }
 
 func (fh *FileHandler) GetFileInfo(ctx *gin.Context) {
@@ -143,7 +155,10 @@ func (fh *FileHandler) GetFileInfo(ctx *gin.Context) {
 		return
 	}
 
-	utils.ResponseSuccess(ctx, http.StatusOK, "File retrieved successfully", gin.H{"file": result})
+	//utils.ResponseSuccess(ctx, http.StatusOK, "File retrieved successfully", gin.H{"file": result})
+	ctx.JSON(http.StatusOK, gin.H{
+		"file" : result,
+	})
 }
 
 func (fh *FileHandler) DownloadFile(ctx *gin.Context) {
