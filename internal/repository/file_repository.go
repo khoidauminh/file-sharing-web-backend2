@@ -89,7 +89,7 @@ func (r *fileRepository) GetFileByID(ctx context.Context, id string) (*domain.Fi
 			id, user_id, name, type, size, share_token, 
 			password, available_from, available_to, enable_totp, created_at, is_public
 		FROM files
-		WHERE id = $1
+		WHERE id = $1 AND removed = FALSE
 	`
 
 	var file domain.File
@@ -145,7 +145,7 @@ func (r *fileRepository) GetFileByToken(ctx context.Context, token string) (*dom
 			password, available_from, available_to, enable_totp, 
 			created_at, is_public
 		FROM files
-		WHERE share_token = $1
+		WHERE share_token = $1 AND removed = FALSE
 	`
 
 	var file domain.File
@@ -194,9 +194,9 @@ func (r *fileRepository) GetFileByToken(ctx context.Context, token string) (*dom
 }
 
 func (r *fileRepository) DeleteFile(ctx context.Context, id string, userID string) error {
-	// Giữ nguyên, vì nó chỉ DELETE metadata trong DB, việc xóa vật lý nằm ở Service
 	query := `
-        DELETE FROM files 
+        UPDATE files 
+		SET removed = TRUE
         WHERE id = $1 AND user_id = $2
     `
 
@@ -224,7 +224,7 @@ func (r *fileRepository) GetMyFiles(ctx context.Context, userID string, params d
 			id, user_id, name, type, size, share_token, 
 			available_from, available_to, enable_totp, created_at, is_public
 		FROM files
-		WHERE user_id = $1 
+		WHERE user_id = $1 AND removed = FALSE
 	`
 	args := []interface{}{userID}
 	query := baseQuery
@@ -289,7 +289,7 @@ func (r *fileRepository) FindAll(ctx context.Context) ([]domain.File, error) {
         SELECT 
             id, user_id, name, type, size, share_token, 
             password, available_from, available_to, enable_totp, created_at, is_public
-        FROM files
+        FROM files WHERE removed = FALSE
         ORDER BY created_at DESC
     `
 

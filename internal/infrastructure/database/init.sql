@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS files (
     password VARCHAR(255),
     type TEXT,
     size BIGINT,
-    deleted BOOLEAN DEFAULT FALSE,
+    removed BOOLEAN DEFAULT FALSE,
     is_public BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT now(),
     available_from TIMESTAMPTZ,

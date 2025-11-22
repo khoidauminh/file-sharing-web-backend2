@@ -175,15 +175,11 @@ func (s *fileService) GetMyFiles(ctx context.Context, userID string, params doma
 		return nil, utils.WrapError(err, "Failed to retrieve user files", utils.ErrCodeInternal)
 	}
 
-	// Logic tính toán Status, HoursRemaining và Summary (Mô phỏng)
-	summary := domain.FileSummary{ActiveFiles: 28, PendingFiles: 5, ExpiredFiles: 9}
-
 	// Cần thêm logic Pagination và tính toán status cho từng file
 
 	return gin.H{
 		"files":      files,
 		"pagination": gin.H{"currentPage": params.Page, "totalPages": 3, "totalFiles": 42, "limit": params.Limit},
-		"summary":    summary,
 	}, nil
 }
 
@@ -240,12 +236,12 @@ func (s *fileService) getFileInfo(ctx context.Context, token string, userID stri
 func (s *fileService) getFileInfoID(ctx context.Context, id string, userID string) (*domain.File, error) {
 	file, err := s.fileRepo.GetFileByID(ctx, id)
 	if err != nil {
-		return nil, utils.WrapError(err, "Failed to get file info", utils.ErrCodeInternal)
+		return nil, fmt.Errorf("failed to get file info: %w", err)
 	}
 
 	shareds, err := s.sharedRepo.GetUsersSharedWith(ctx, file.Id)
 	if err != nil {
-		return nil, utils.WrapError(err, "Failed to get shared list", utils.ErrCodeInternal)
+		return nil, fmt.Errorf("failed to get shared list: %w", err)
 	}
 
 	if !file.IsPublic {
