@@ -42,7 +42,10 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		claims, err := jwtService.ParseToken(tokenString)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error":   "Unauthorized",
+				"message": "Invalid Bearer token",
+			})
 			return
 		}
 
@@ -71,7 +74,10 @@ func AuthMiddlewareUpload() gin.HandlerFunc {
 
 		claims, err := jwtService.ParseToken(tokenString)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error":   "Unauthorized",
+				"message": "Invalid Bearer token",
+			})
 			return
 		}
 
