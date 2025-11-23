@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"mime/multipart"
 
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/config"
+	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/api/dto"
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/internal/domain"
 	"github.com/dath-251-thuanle/file-sharing-web-backend2/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -26,6 +28,16 @@ type AuthService interface {
 	VerifyTOTP(userID string, code string) (bool, *utils.ReturnStatus)
 	Logout(ctx *gin.Context) *utils.ReturnStatus
 	LoginTOTP(email, totpCode string) (*domain.User, string, *utils.ReturnStatus)
+}
+
+type FileService interface {
+	UploadFile(ctx context.Context, fileHeader *multipart.FileHeader, req *dto.UploadRequest, ownerID *string) (*domain.File, error)
+	GetMyFiles(ctx context.Context, userID string, params domain.ListFileParams) (interface{}, error)
+	DeleteFile(ctx context.Context, fileID string, userID string) error
+	GetFileInfo(ctx context.Context, token string, userID string) (*domain.File, error)
+	GetFileInfoID(ctx context.Context, token string, userID string) (*domain.File, error)
+	DownloadFile(ctx context.Context, token string, userID string, password string) (*domain.File, []byte, error)
+	GetFileDownloadHistory(ctx context.Context, fileID string, userID string, pagenum, limit int) (*domain.FileDownloadHistory, error)
 }
 
 type AdminService interface {

@@ -35,9 +35,9 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 		// Giả định trường Role trong Claims là 'Role'
 		if strings.ToLower(claims.Role) != AdminRole { // Chuyển về chữ thường để so sánh an toàn hơn
 			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-			"error": "Forbidden",
-			"message": "You don't have permission to access this resource",
-		})
+				"error":   "Forbidden",
+				"message": "You don't have permission to access this resource",
+			})
 			return
 		}
 

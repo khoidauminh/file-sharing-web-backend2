@@ -174,25 +174,17 @@ Upload file mới và tạo share link.
 **Response (201 Created)**
 ```json
 {
-    "success": true,
-    "file": {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "fileName": "document.pdf",
-        "fileSize": 2048576,
-        "mimeType": "application/pdf",
-        "shareToken": "a1b2c3d4e5f6g7h8",
-        "shareLink": "<https://example.com/f/a1b2c3d4e5f6g7h8>",
-        "isPublic": false,
-        "hasPassword": true,
-        "availableFrom": "2025-11-10T00:00:00Z",
-        "availableTo": "2025-11-17T00:00:00Z",
-        "validityDays": 7,
-        "status": "pending",
-        "sharedWith": ["<user1@example.com>", "<user2@example.com>"],
-        "enableTOTP": false,
-        "createdAt": "2025-11-04T12:00:00Z"
-    },
-    "message": "File uploaded successfully"
+  "success": true,
+  "message": "File uploaded successfully",
+  "file": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "fileName": "report.pdf",
+    "shareToken": "a1b2c3d4e5f6g7h8"
+  },
+  "totpSetup": {
+    "secret": "NB2W45DFOIZA====",
+    "qrCode": "data:image/png;base64,iVBORw0KGgo..."
+  }
 }
 ```
 **Validation Rules**
@@ -221,27 +213,15 @@ Lấy thông tin file (sử dụng share token).
 **Response (200 OK)**
 ```json
 {
-    "file": {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "fileName": "document.pdf",
-        "fileSize": 2048576,
-        "mimeType": "application/pdf",
-        "shareToken": "a1b2c3d4e5f6g7h8",
-        "isPublic": false,
-        "hasPassword": true,
-        "availableFrom": "2025-11-10T00:00:00Z",
-        "availableTo": "2025-11-17T00:00:00Z",
-        "status": "active",
-        "hoursRemaining": 120.5,
-        "owner": {
-            "id": "owner-uuid",
-            "username": "nam123",
-            "email": "<nam@example.com>"
-        },
-        "sharedWith": ["<user1@example.com>", "<user2@example.com>"],
-        "createdAt": "2025-11-04T12:00:00Z"
-    }
+  "file": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "fileName": "contract.pdf",
+    "shareToken": "a1b2c3d4e5f6g7h8",
+    "status": "active",
+    "isPublic": false
+  }
 }
+
 ```
 **File Status**
 
@@ -250,40 +230,6 @@ Lấy thông tin file (sử dụng share token).
 | **pending**    | Chưa đến availableFrom          |
 | **active**     | Trong thời gian hiệu lực        |
 | **expired**    | Đã hết hạn (availableTo đã qua) |
-
-## `GET /api/files/:shareToken`
-
-Lấy thông tin file (sử dụng share token).
-
-**Response (200 OK)**
-```json
-{
-    "file": {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "fileName": "document.pdf",
-        "fileSize": 2048576,
-        "mimeType": "application/pdf",
-        "shareToken": "a1b2c3d4e5f6g7h8",
-        "isPublic": false,
-        "hasPassword": true,
-        "availableFrom": "2025-11-10T00:00:00Z",
-        "availableTo": "2025-11-17T00:00:00Z",
-        "status": "active",
-        "hoursRemaining": 120.5,
-        "owner": {
-            "id": "owner-uuid",
-            "username": "nam123",
-            "email": "<nam@example.com>"
-        },
-        "sharedWith": ["<user1@example.com>", "<user2@example.com>"],
-        "createdAt": "2025-11-04T12:00:00Z"
-    }
-}
-```
-**File Status:**
-- **pending**: Chưa đến thời gian availableFrom
-- **active**: Đang trong thời gian hiệu lực
-- **expired**: Đã hết hạn (`availableTo` đã qua)
 
 **Status Codes:**
 - `200`: OK
@@ -387,15 +333,8 @@ Authorization: Bearer `<token>`
 
 **Query Parameters**
 ```
-?status=active|expired|pending|all (default: all)
-
 &page=1
-
 &limit=20
-
-&sortBy=createdAt|fileName
-
-&order=asc|desc
 ```
 **Response (200 OK)**
 ```json

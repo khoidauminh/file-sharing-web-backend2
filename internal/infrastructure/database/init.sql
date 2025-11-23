@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     secretTOTP VARCHAR(255)
 );
 
+
 CREATE TABLE IF NOT EXISTS files (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID, -- Cho phép file anonymous upload.
