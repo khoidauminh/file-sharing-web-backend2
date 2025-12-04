@@ -14,7 +14,7 @@ jobs:
       - name: Check Go
         run: go version
       - name: Start containers
-        run: docker compose up -d --build
+        run: docker compose up -d
       - name: Wait for PostgreSQL to be ready
         run: |
           echo "Waiting for PostgreSQL..."
