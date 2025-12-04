@@ -16,15 +16,16 @@ jobs:
         run: go version
 
       - name: Create .env from secrets
+        shell: bash
         run: |
-          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" > .env
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_SSLMODE=${{ secrets.DB_SSLMODE }}" >> .env
-          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          printf "SERVER_PORT=%s\n" "${{ secrets.SERVER_PORT }}" > .env
+          printf "DB_HOST=%s\n" "${{ secrets.DB_HOST }}" >> .env
+          printf "DB_PORT=%s\n" "${{ secrets.DB_PORT }}" >> .env
+          printf "DB_NAME=%s\n" "${{ secrets.DB_NAME }}" >> .env
+          printf "DB_USER=%s\n" "${{ secrets.DB_USER }}" >> .env
+          printf "DB_PASSWORD=%s\n" "${{ secrets.DB_PASSWORD }}" >> .env
+          printf "DB_SSLMODE=%s\n" "${{ secrets.DB_SSLMODE }}" >> .env
+          printf "JWT_SECRET_KEY=%s\n" "${{ secrets.JWT_SECRET_KEY }}" >> .env
 
       - name: Start containers
         run: docker compose up -d
