@@ -122,7 +122,7 @@ curl -X GET http://localhost:8080/files/{shareToken}/download \
 | `POST` | `/files/upload` | Upload file (Token là tùy chọn nếu upload public). |
 | `GET` | `/files/my` | Danh sách file của người dùng hiện tại. |
 | `GET` | `/files/info/{id}` | Lấy metadata chi tiết (Chỉ Owner). |
-| `DELETE` | `/files/info/{id}` | Xóa file (Chỉ Owner). |
+| `DELETE` | `/files/{id}` | Xóa file (Chỉ Owner). |
 | `GET` | `/files/{shareToken}` | Lấy thông tin file công khai. |
 | `GET` | `/files/{shareToken}/download`| Tải nội dung file (binary). |
 | `GET` | `/files/stats/{id}` | Xem thống kê lượt tải. |
