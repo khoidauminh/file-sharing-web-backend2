@@ -30,5 +30,5 @@ func TestFileUpload(t *testing.T) {
 	rec := httptest.NewRecorder()
 	TestApp.Router().ServeHTTP(rec, req)
 
-	assert.Contains(t, []int{200, 400, 401}, rec.Code)
+	assert.Contains(t, []int{201, 200}, rec.Code)
 }
