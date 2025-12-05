@@ -18,7 +18,7 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 
-COPY .env .env
+COPY .env .
 
 EXPOSE 8080
 
