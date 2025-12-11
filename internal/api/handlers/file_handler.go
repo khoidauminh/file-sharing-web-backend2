@@ -331,7 +331,28 @@ func (fh *FileHandler) GetAllAccessibleFiles(ctx *gin.Context) {
 		return
 	}
 
+	page := utils.GetIntQuery(ctx, "page", 1)
+	limit := utils.GetIntQuery(ctx, "limit", 20)
+	totalPages := 1
+
+	if len(files) != 0 {
+		totalPages = (len(files) + limit) / limit
+	}
+
+	if page > totalPages {
+		page = totalPages
+	}
+
+	start := limit * (page - 1)
+	end := min(start+limit, len(files))
+
 	ctx.JSON(http.StatusOK, gin.H{
-		"files": files,
+		"files": files[start:end],
+		"pagination": gin.H{
+			"currentPage": page,
+			"totalPages":  totalPages,
+			"totalFiles":  len(files),
+			"limit":       limit,
+		},
 	})
 }

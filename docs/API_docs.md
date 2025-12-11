@@ -1346,6 +1346,70 @@ To perform this operation, you must be authenticated by means of one of the foll
 BearerAuth, None
 </aside>
 
+
+## get__files_available
+
+`GET /files/available`
+
+*Xem các file có thể tải về*
+
+Trả về danh sách các file công khai hoặc, chia sẻ tới người dùng, 
+hoặc thuộc sở hữu của người dùng, với điều kiện là file còn mở và chưa hết hạn.
+
+
+**Bảo mật**
+API không yêu cầu authentication.
+Khi không có Bearer Token, coi như đang truy cập ẩn danh. Chỉ trả về những
+file công khai và còn hạn.
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "files": [
+    {
+      "fileid": "8872e350-0ddf-4f4d-8377-af36176c706a",
+      "filename": "Chụp màn hình từ 2025-12-05 23-35-02.png",
+      "owner": "kdm@gmail.com",
+      "haspassword": false,
+      "sharetoken": "2rGLIMfFKBIBNUf8"
+    },
+    {
+      "fileid": "8954e414-c0dd-4179-9359-a8dab62a9ce1",
+      "filename": "test_file.txt",
+      "owner": null,
+      "haspassword": true,
+      "sharetoken": "yVgxoBsxjhaguXYg"
+    },
+    {
+      "fileid": "c6db933c-3669-4b37-989c-45eef16bb67d",
+      "filename": "test_file.txt",
+      "owner": null,
+      "haspassword": false,
+      "sharetoken": "2avSKWCwisTq99iL"
+    },
+  ]
+}
+```
+
+> Khi không có Bearer Token (ẩn danh) 
+
+```json
+{
+  "files": [
+    {
+      "fileid": "8872e350-0ddf-4f4d-8377-af36176c706a",
+      "filename": "Chụp màn hình từ 2025-12-05 23-35-02.png",
+      "owner": "kdm@gmail.com",
+      "haspassword": false,
+      "sharetoken": "2rGLIMfFKBIBNUf8"
+    },
+  ]
+}
+```
+
 <h1 id="file-sharing-system-api-admin">Admin</h1>
 
 Admin-only operations
