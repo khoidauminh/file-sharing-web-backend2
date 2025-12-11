@@ -24,6 +24,14 @@ type UploadRequest struct {
 	EnableTOTP bool `form:"enableTOTP"`
 }
 
+type AccessibleFile struct {
+	FileId      string  `json:"fileid"`
+	FileName    string  `json:"filename"`
+	OwnerEmail  *string `json:"owner"`
+	HasPassword bool    `json:"haspassword"`
+	ShareToken  string  `json:"sharetoken"`
+}
+
 // FileHeader là một wrapper để GIN có thể bind field "file"
 // Tuy nhiên, thường thì bạn sử dụng *multipart.FileHeader trực tiếp trong Handler/Service.
 // Giữ nguyên FileHeader cho mục đích cấu trúc.

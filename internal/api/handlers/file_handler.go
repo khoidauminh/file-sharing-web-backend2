@@ -315,3 +315,23 @@ func (fh *FileHandler) GetFileStats(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, out)
 }
+
+func (fh *FileHandler) GetAllAccessibleFiles(ctx *gin.Context) {
+	userIDprobe, exists := ctx.Get("userID")
+	var userID *string = nil
+
+	if exists {
+		tmp := userIDprobe.(string)
+		userID = &tmp
+	}
+
+	files, err := fh.file_service.GetAllAccessibleFiles(ctx, userID)
+	if err != nil {
+		err.Export(ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"files": files,
+	})
+}

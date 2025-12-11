@@ -25,6 +25,7 @@ type FileRepository interface {
 	RegisterDownload(ctx context.Context, fileID string, userID string) *utils.ReturnStatus
 	GetFileDownloadHistory(ctx context.Context, fileID string) (*domain.FileDownloadHistory, *utils.ReturnStatus)
 	GetFileStats(ctx context.Context, fileID string) (*domain.FileStat, *utils.ReturnStatus)
+	GetAllAccessibleFiles(ctx context.Context, userIDop *string) ([]domain.File, *utils.ReturnStatus)
 }
 
 type fileRepository struct {
@@ -518,4 +519,53 @@ func (r *fileRepository) GetFileStats(ctx context.Context, fileID string) (*doma
 	}
 
 	return &stat, nil
+}
+
+func (r *fileRepository) GetAllAccessibleFiles(ctx context.Context, userIDop *string) ([]domain.File, *utils.ReturnStatus) {
+	query := `
+		SELECT DISTINCT f.id
+		FROM files f LEFT JOIN shared s ON f.id = s.file_id
+		WHERE
+			(f.is_public OR $1 = s.user_id)
+		AND (NOW() >= f.available_from AND NOW() < f.available_to)
+		OR $1 = f.user_id;
+	`
+
+	queryNull := `
+		SELECT DISTINCT f.id
+		FROM files f
+		WHERE
+			f.is_public
+		AND (NOW() >= f.available_from AND NOW() < f.available_to)
+	`
+	var rows *sql.Rows = nil
+	var err error = nil
+
+	if userIDop != nil {
+		rows, err = r.db.QueryContext(ctx, query, *userIDop)
+	} else {
+		rows, err = r.db.QueryContext(ctx, queryNull)
+	}
+
+	if err != nil {
+		return nil, utils.ResponseMsg(utils.ErrCodeInternal, err.Error())
+	}
+
+	var out []domain.File
+
+	for rows.Next() {
+		var fileID string
+		if err := rows.Scan(&fileID); err != nil {
+			return nil, utils.ResponseMsg(utils.ErrCodeInternal, err.Error())
+		}
+
+		file, err := r.GetFileByID(ctx, fileID)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, *file)
+	}
+
+	return out, nil
 }
