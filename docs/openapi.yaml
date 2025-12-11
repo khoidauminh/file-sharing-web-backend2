@@ -1184,6 +1184,71 @@ paths:
                     availableFrom: "2025-11-20T10:00:00Z"
                     hoursUntilAvailable: 6
 
+  /files/available:
+    get:
+      tags:
+        - Files
+      summary: Xem các file có thể tải về
+      description: |
+        Trả về danh sách các file công khai hoặc, chia sẻ tới người dùng,
+        hoặc thuộc sở hữu của người dùng, với điều kiện là file còn mở và chưa hết hạn.
+
+        API không yêu cầu authentication.
+        Khi không có Bearer Token, coi như đang truy cập ẩn danh. Chỉ trả về những
+        file công khai và còn hạn.
+        
+      security:
+        - BearerAuth: []
+        - {}
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Số trang
+          schema:
+            type: number
+            
+        - name: limit
+          in: query
+          description: Giới hạn số file hiển thị mỗi trang
+          schema:
+            type: number
+            
+      responses:
+        "200":
+          description: Danh sách file
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    files:
+                    - fileid: 1ce7dbd6-9569-433a-bbc6-e58292e16ff0
+                      filename: Chụp màn hình từ 2025-12-11 17-41-38.png
+                      owner: kdm@gmail.com
+                      haspassword: false
+                      sharetoken: oCZTb3WCs6GHn2FZ
+                    - fileid: 47b60c4a-07a4-466b-b3c1-5c8e47e269b0
+                      filename: test_file.txt
+                      owner: null
+                      haspassword: false
+                      sharetoken: MBkgYwBvYVWRnEmF
+                    - fileid: c0e7413e-d00e-4aa8-9269-8c7d31f1feec
+                      filename: test_file.txt
+                      owner: null
+                      haspassword: true
+                      sharetoken: 7tW8XWkJMd3Dvmim
+                    - fileid: 1c81e539-6f71-4e71-9c1e-5c41613af495
+                      filename: test_file.txt
+                      owner: null
+                      haspassword: false
+                      sharetoken: n2dKe99plZ8V55Eh
+                    pagination:
+                      currentPage: 2
+                      limit: 10
+                      totalFiles: 14
+                      totalPages: 2
+        
   /admin/cleanup:
     post:
       tags:
@@ -1701,6 +1766,46 @@ components:
               type: integer
               description: Số file đã bị xóa
               example: 0
+
+    AvailableFile:
+      type: object
+      description: Shemma cho available file.
+      properties:
+        fileid":
+          type: string
+        filename": 
+          type: string
+        owner": 
+          type: string
+        haspassword":
+          type: boolean
+        sharetoken": 
+          type: string
+
+    AvailableFilesResponse:
+      type: object
+      description: Response cho GET /files/my - danh sách file của user hiện tại
+      properties:
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/AvailableFile"
+          description: Danh sách file của user (có thể filter theo status)
+        pagination:
+          type: object
+          properties:
+            currentPage:
+              type: integer
+              example: 1
+            totalPages:
+              type: integer
+              example: 3
+            totalFiles:
+              type: integer
+              example: 42
+            limit:
+              type: integer
+              example: 20
 
     SystemPolicy:
       type: object

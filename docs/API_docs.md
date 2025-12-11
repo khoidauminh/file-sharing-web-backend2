@@ -1362,6 +1362,13 @@ API không yêu cầu authentication.
 Khi không có Bearer Token, coi như đang truy cập ẩn danh. Chỉ trả về những
 file công khai và còn hạn.
 
+<h3 id="get__files_available>Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|page|path|string|false|Số trang|
+|limit|path|string|false|Giới hạn số file hiển thị mỗi trang|
+
 > Example responses
 
 > 200 Response
@@ -1390,7 +1397,62 @@ file công khai và còn hạn.
       "haspassword": false,
       "sharetoken": "2avSKWCwisTq99iL"
     },
-  ]
+    {
+      "fileid": "63cb13c4-53f2-4072-8bbc-3298560cc0c2",
+      "filename": "gods mid.mp3",
+      "owner": "kdm@gmail.com",
+      "haspassword": false,
+      "sharetoken": "8mzKnJWRVCV3eS5X"
+    },
+    {
+      "fileid": "e73097aa-4625-4ddd-916c-834a1284a30d",
+      "filename": "test_file.txt",
+      "owner": null,
+      "haspassword": false,
+      "sharetoken": "XrrhNA25rGLK6g0h"
+    },
+    {
+      "fileid": "0d42044f-26d1-4620-8c3f-fd77abdccad9",
+      "filename": "Chụp màn hình từ 2025-12-05 23-35-02.png",
+      "owner": "third@gmail.com",
+      "haspassword": false,
+      "sharetoken": "GSA8seLfiLYurK4P"
+    },
+    {
+      "fileid": "1ba8d4cb-527a-48ad-95af-edf19750af41",
+      "filename": "81458575.jpg",
+      "owner": "kdm@gmail.com",
+      "haspassword": false,
+      "sharetoken": "h7Tlte0pEgOmIzN9"
+    },
+    {
+      "fileid": "0b394c90-980c-4ca7-b835-8fd79e90d9ec",
+      "filename": "Chụp màn hình từ 2025-12-05 23-35-02.png",
+      "owner": "kdm@gmail.com",
+      "haspassword": false,
+      "sharetoken": "qlaOD8WXUUGykUAS"
+    },
+    {
+      "fileid": "453826fb-ddda-434a-9e09-4a0382047099",
+      "filename": "81458575.jpg",
+      "owner": "kdm@gmail.com",
+      "haspassword": false,
+      "sharetoken": "3Ol0iYWn8jlR8FjD"
+    },
+    {
+      "fileid": "f8462418-c089-41bd-88ba-d147703c851a",
+      "filename": "Chụp màn hình từ 2025-12-05 23-35-02.png",
+      "owner": "kdm@gmail.com",
+      "haspassword": false,
+      "sharetoken": "rz4on3OEQK7D2n2u"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "limit": 10,
+    "totalFiles": 34,
+    "totalPages": 4
+  }
 }
 ```
 
@@ -1400,13 +1462,40 @@ file công khai và còn hạn.
 {
   "files": [
     {
-      "fileid": "8872e350-0ddf-4f4d-8377-af36176c706a",
-      "filename": "Chụp màn hình từ 2025-12-05 23-35-02.png",
+      "fileid": "1ce7dbd6-9569-433a-bbc6-e58292e16ff0",
+      "filename": "Chụp màn hình từ 2025-12-11 17-41-38.png",
       "owner": "kdm@gmail.com",
       "haspassword": false,
-      "sharetoken": "2rGLIMfFKBIBNUf8"
+      "sharetoken": "oCZTb3WCs6GHn2FZ"
     },
-  ]
+    {
+      "fileid": "47b60c4a-07a4-466b-b3c1-5c8e47e269b0",
+      "filename": "test_file.txt",
+      "owner": null,
+      "haspassword": false,
+      "sharetoken": "MBkgYwBvYVWRnEmF"
+    },
+    {
+      "fileid": "c0e7413e-d00e-4aa8-9269-8c7d31f1feec",
+      "filename": "test_file.txt",
+      "owner": null,
+      "haspassword": true,
+      "sharetoken": "7tW8XWkJMd3Dvmim"
+    },
+    {
+      "fileid": "1c81e539-6f71-4e71-9c1e-5c41613af495",
+      "filename": "test_file.txt",
+      "owner": null,
+      "haspassword": false,
+      "sharetoken": "n2dKe99plZ8V55Eh"
+    }
+  ],
+  "pagination": {
+    "currentPage": 2,
+    "limit": 10,
+    "totalFiles": 14,
+    "totalPages": 2
+  }
 }
 ```
 
