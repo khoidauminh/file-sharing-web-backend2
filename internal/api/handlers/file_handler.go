@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -257,7 +258,43 @@ func (fh *FileHandler) DownloadFile(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Data(http.StatusOK, info.MimeType, file)
+	fileBytes, readerr := io.ReadAll(file)
+	if readerr != nil {
+		utils.ResponseMsg(utils.ErrCodeInternal, readerr.Error()).Export(ctx)
+		return
+	}
+
+	ctx.Data(http.StatusOK, info.MimeType, fileBytes)
+}
+
+func (fh *FileHandler) PreviewFile(ctx *gin.Context) {
+	fileToken := ctx.Param("ident")
+	password := ctx.Query("password")
+	userID, exists := ctx.Get("userID")
+	if !exists {
+		userID = nil
+	}
+
+	info, file, download_err := fh.file_service.DownloadFile(ctx, fileToken, userID.(string), password)
+	if download_err != nil {
+		download_err.Export(ctx)
+		return
+	}
+
+	fileBytes, readerr := io.ReadAll(file)
+	if readerr != nil {
+		utils.ResponseMsg(utils.ErrCodeInternal, readerr.Error()).Export(ctx)
+		return
+	}
+
+	ctx.Header("Content-Disposition", "inline; filename=\""+info.FileName+"\"")
+	ctx.Header("Content-Type", info.MimeType)
+
+	extraHeaders := map[string]string{
+		"Content-Disposition": `inline; filename="` + info.FileName + `"`,
+	}
+
+	ctx.DataFromReader(http.StatusOK, int64(len(fileBytes)), info.MimeType, file, extraHeaders)
 }
 
 func (fh *FileHandler) GetFileDownloadHistory(ctx *gin.Context) {
