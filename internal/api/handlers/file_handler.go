@@ -315,3 +315,44 @@ func (fh *FileHandler) GetFileStats(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, out)
 }
+
+func (fh *FileHandler) GetAllAccessibleFiles(ctx *gin.Context) {
+	userIDprobe, exists := ctx.Get("userID")
+	var userID *string = nil
+
+	if exists {
+		tmp := userIDprobe.(string)
+		userID = &tmp
+	}
+
+	files, err := fh.file_service.GetAllAccessibleFiles(ctx, userID)
+	if err != nil {
+		err.Export(ctx)
+		return
+	}
+
+	page := utils.GetIntQuery(ctx, "page", 1)
+	limit := utils.GetIntQuery(ctx, "limit", 20)
+	totalPages := 1
+
+	if len(files) != 0 {
+		totalPages = (len(files) + limit) / limit
+	}
+
+	if page > totalPages {
+		page = totalPages
+	}
+
+	start := limit * (page - 1)
+	end := min(start+limit, len(files))
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"files": files[start:end],
+		"pagination": gin.H{
+			"currentPage": page,
+			"totalPages":  totalPages,
+			"totalFiles":  len(files),
+			"limit":       limit,
+		},
+	})
+}

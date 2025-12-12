@@ -443,3 +443,35 @@ func (s *fileService) GetFileStats(ctx context.Context, fileID, userID string) (
 
 	return s.fileRepo.GetFileStats(ctx, fileID)
 }
+
+func (s *fileService) GetAllAccessibleFiles(ctx context.Context, userID *string) ([]dto.AccessibleFile, *utils.ReturnStatus) {
+	files, err := s.fileRepo.GetAllAccessibleFiles(ctx, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var out []dto.AccessibleFile
+
+	for _, file := range files {
+		var user domain.User
+		var email *string
+
+		if file.OwnerId != nil {
+			if err := s.userRepo.FindById(*file.OwnerId, &user); err != nil {
+				return nil, err
+			}
+			email = &user.Email
+		}
+
+		out = append(out, dto.AccessibleFile{
+			FileId:      file.Id,
+			FileName:    file.FileName,
+			OwnerEmail:  email,
+			HasPassword: file.HasPassword,
+			ShareToken:  file.ShareToken,
+		})
+	}
+
+	return out, nil
+}

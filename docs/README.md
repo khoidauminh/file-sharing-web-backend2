@@ -127,6 +127,7 @@ curl -X GET http://localhost:8080/files/{shareToken}/download \
 | `GET` | `/files/{shareToken}/download`| Tải nội dung file (binary). |
 | `GET` | `/files/stats/{id}` | Xem thống kê lượt tải. |
 | `GET` | `/files/download-history/{id}`| Xem nhật ký tải chi tiết. |
+| `GET` | `/files/available` | Xem các file có thể tải về. |
 
 ### Quản trị (`/admin`)
 
